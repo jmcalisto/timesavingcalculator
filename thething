@@ -118,48 +118,89 @@
 
 </style>
 </head>
-<body onload="calculate()"> <div class="container">
-  <h2>AI Time-Saving Calculator</h2>
-  
-  <p class="instruction">
+<body onload="init()"> <div class="container">
+  <h2 id="title">AI Time-Saving Calculator</h2>
+
+  <p class="instruction" id="instruction">
     How many <strong>HOURS A WEEK</strong> do you spend on admin tasks, scheduling, formatting, notetaking?
   </p>
-  
-  <p class="instruction">
+
+  <p class="instruction" id="subInstruction">
     👇 Use the slider below to estimate your time
   </p>
-  
+
   <div class="slider-container">
-    <span class="slider-value"><span id="hoursDisplay">5</span> hours</span>
+    <span class="slider-value"><span id="hoursDisplay">5</span> <span id="hoursUnit">hours</span></span>
     <input type="range" id="hoursInput" min="0" max="20" value="5" oninput="calculate()">
   </div>
 
   <div class="result-box" id="resultBox">
     <span id="annualResult" class="big-impact">AI can save you 240 hours</span>
-    <span class="sub-impact">That's <span id="weeksResult">6.0</span> full work weeks per year</span>
+    <span class="sub-impact" id="weeksLine">That's <span id="weeksResult">6.0</span> full work weeks per year</span>
   </div>
 </div>
 
 <script>
-function calculate() {
-  // 1. Get the value from the slider
-  var weekly = document.getElementById("hoursInput").value;
-  
-  // 2. The Math (48 working weeks in a year)
-  var annual = weekly * 48; 
-  
-  // 3. The Math (40 hour work week)
-  var weeksLost = (annual / 40).toFixed(1); 
+var STRINGS = {
+  en: {
+    htmlLang: "en",
+    title: "AI Time-Saving Calculator",
+    instruction: 'How many <strong>HOURS A WEEK</strong> do you spend on admin tasks, scheduling, formatting, notetaking?',
+    subInstruction: "👇 Use the slider below to estimate your time",
+    hoursUnit: "hours",
+    annualResult: function(h) { return "AI can save you " + h + " hours"; },
+    weeksLine: function(w) { return "That's <span id=\"weeksResult\">" + w + "</span> full work weeks per year"; }
+  },
+  zh: {
+    htmlLang: "zh-CN",
+    title: "AI 节省时间计算器",
+    instruction: '您<strong>每周</strong>花多少<strong>小时</strong>在行政工作、日程安排、格式编辑和会议记录上？',
+    subInstruction: "👇 使用下方滑块估算您的时间",
+    hoursUnit: "小时",
+    annualResult: function(h) { return "AI 每年可为您节省 " + h + " 小时"; },
+    weeksLine: function(w) { return "相当于每年 <span id=\"weeksResult\">" + w + "</span> 个完整工作周"; }
+  },
+  ko: {
+    htmlLang: "ko",
+    title: "AI 시간 절약 계산기",
+    instruction: '행정 업무, 일정 관리, 문서 작성, 회의록 작성에 <strong>일주일에 몇 시간</strong>을 사용하시나요?',
+    subInstruction: "👇 아래 슬라이더로 시간을 추정해보세요",
+    hoursUnit: "시간",
+    annualResult: function(h) { return "AI가 연간 " + h + "시간을 절약해 드립니다"; },
+    weeksLine: function(w) { return "이는 연간 <span id=\"weeksResult\">" + w + "</span>주간의 업무 시간에 해당합니다"; }
+  }
+};
 
-  // 4. Update the text on screen
+function getLang() {
+  var params = new URLSearchParams(window.location.search);
+  var lang = (params.get("lang") || "en").toLowerCase();
+  return STRINGS[lang] ? lang : "en";
+}
+
+var LANG = getLang();
+var T = STRINGS[LANG];
+
+function init() {
+  document.documentElement.setAttribute("lang", T.htmlLang);
+  document.getElementById("title").innerText = T.title;
+  document.getElementById("instruction").innerHTML = T.instruction;
+  document.getElementById("subInstruction").innerText = T.subInstruction;
+  document.getElementById("hoursUnit").innerText = T.hoursUnit;
+  calculate();
+}
+
+function calculate() {
+  var weekly = document.getElementById("hoursInput").value;
+  var annual = weekly * 48;
+  var weeksLost = (annual / 40).toFixed(1);
+
   document.getElementById("hoursDisplay").innerText = weekly;
-  document.getElementById("annualResult").innerText = "AI can save you " + annual + " hours";
-  document.getElementById("weeksResult").innerText = weeksLost;
-  
-  // 5. Add a tiny pulse effect to the box when it updates (optional polish)
+  document.getElementById("annualResult").innerText = T.annualResult(annual);
+  document.getElementById("weeksLine").innerHTML = T.weeksLine(weeksLost);
+
   var box = document.getElementById("resultBox");
   box.classList.remove("pulse");
-  void box.offsetWidth; // trigger reflow
+  void box.offsetWidth;
   box.classList.add("pulse");
 }
 </script>
